@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 function mi_form_plugin(): string
 {
     global $wpdb;
-    $options = $wpdb->get_row(/** @lang sql */ "SELECT * FROM wp_mi_creator_fields WHERE id = 1;",object);
+    $options = $wpdb->get_row(/** @lang sql */ "SELECT * FROM wp_mi_creator_fields WHERE id = 1;", object);
     $div = '<form method="POST" action="" style="display: grid">';
     if ($options->username) {
         $div .= '<label>username:</label>';
@@ -56,6 +56,7 @@ function display_menu()
             <p>can create and manage your custom form , also MI creator support data insertion in your database.
                 <mark>MI creator Form is FOSS🤍</mark>
             </p>
+            <p><b>NOTE:</b> shortcode for implement the plugin functionality <strong>[mi-form]</strong> </p>
         </div>
         <div class="main">
             <div class="main-opt">
@@ -91,15 +92,43 @@ function display_menu()
                         </div>
                     </form>
                 </div>
-                <div class="data-forms">
+                <div class="data-forms hidden-content">
+                    <h1>data Forms :</h1>
+                    <?php
+                    global $wpdb;
+                    $results = $wpdb->get_results(/** @lang sql */ "SELECT * FROM wp_mi_creator_fields_data");
+                    echo '<table>
+                              <tr>
+                                <th>id</th>
+                                <th>username</th>
+                                <th>email</th>
+                                <th>subject</th>
+                                <th>message</th>
+
+                              </tr>';
+                    foreach ($results as $row) {
+                        echo "
+                          <tr>
+                            <td>" . $row->id . "</td>
+                            <td>" . $row->username . "</td>
+                            <td>" . $row->email . "</td>
+                            <td>" . $row->subject . "</td>
+                            <td>" . $row->message . "</td>
+
+                          </tr>
+                        ";
+                    }
+                    echo '</table>'
+                    ?>
                 </div>
             </div>
         </div>
     </div>
     <style>
         .content {
-            width: 100%;
+            width: calc(100% - 20px);
             height: 85vh;
+            padding-right: 20px;
         }
 
         .main {
@@ -123,12 +152,31 @@ function display_menu()
             background-color: white;
             border: 2px solid transparent;
             transition: all .25s linear;
+        }
 
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
         }
 
         .main-opt > div:hover {
             background-color: #eeeeee;
             border-color: #4b4a4a;
+        }
+
+        .option-content > div {
+            width: 75%;
         }
 
         .main-opt > div:active, .active--option {
@@ -138,6 +186,25 @@ function display_menu()
 
         .hidden-content {
             display: none;
+        }
+
+        .options-form form {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            row-gap: 25px
+        }
+
+        form .input-group {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+        }
+
+        h1 {
+            margin-top: 15px;
+            margin-bottom: 45px;
         }
 
         mark {
@@ -179,7 +246,7 @@ function display_menu()
                 setting_form.classList.add('hidden-content');
             }
         })
-    </script>   
+    </script>
     <?php
 }
 
@@ -250,11 +317,19 @@ function deactivation_plugin_option()
 
 function update_status_of_fields()
 {
+    $username = false;
+    $email = false;
+    $subject = false;
+    $message = false;
+    if ($_POST['username'] == 'on') $username = true;
+    if ($_POST['message'] == 'on') $message = true;
+    if ($_POST['subject'] == 'on') $subject = true;
+    if ($_POST['email'] == 'on') $email = true;
     global $wpdb;
     unset($_POST['submit-setting']);
     $wpdb->update(
         'wp_mi_creator_fields',
-        $_POST,
+        array('email' => $email, 'username' => $username, 'message' => $message, 'subject' => $subject),
         ['id' => 1]
     );
 }
