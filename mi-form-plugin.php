@@ -18,12 +18,11 @@ if (!defined('ABSPATH')) {
 function mi_form_plugin(): string
 {
     global $wpdb;
-    $options = $wpdb->get_row(/** @lang sql */ "SELECT * FROM `mi_creator_fields` WHERE id = 1;");
-    print_r($options);
-    $div = '<form method="POST" action="">';
+    $options = $wpdb->get_row(/** @lang sql */ "SELECT * FROM wp_mi_creator_fields WHERE id = 1;",object);
+    $div = '<form method="POST" action="" style="display: grid">';
     if ($options->username) {
-        $div .= '<label>First Name:</label>';
-        $div .= '<input type="text" name="firstname" placeholder="First name"><br>';
+        $div .= '<label>username:</label>';
+        $div .= '<input type="text" name="username" placeholder="username"><br>';
     }
     if ($options->email) {
         $div .= '<label>Email:</label>';
@@ -31,11 +30,11 @@ function mi_form_plugin(): string
     }
     if ($options->subject) {
         $div .= '<label>Subject:</label>';
-        $div .= '<input type="text" name="message_subject" placeholder="Subject"><br>';
+        $div .= '<input type="text" name="subject" placeholder="Subject"><br>';
     }
     if ($options->message) {
         $div .= '<label>Message:</label>';
-        $div .= '<input type="text" name="message_content" placeholder="Message"><br>';
+        $div .= '<textarea style="resize: vertical;height:200px;" name="message" placeholder="Message"></textarea><br>';
     }
     $div .= '<input type="submit" name="submit"><br>';
     $div .= '</form>';
@@ -180,7 +179,7 @@ function display_menu()
                 setting_form.classList.add('hidden-content');
             }
         })
-    </script>
+    </script>   
     <?php
 }
 
@@ -252,12 +251,7 @@ function deactivation_plugin_option()
 function update_status_of_fields()
 {
     global $wpdb;
-    $username = (bool)$_POST['username'];
-    $email = (bool)$_POST['email'];
-    $subject = (bool)$_POST['subject'];
-    $message = (bool)$_POST['message'];
-
-    unset($_POST['submit']);
+    unset($_POST['submit-setting']);
     $wpdb->update(
         'wp_mi_creator_fields',
         $_POST,
