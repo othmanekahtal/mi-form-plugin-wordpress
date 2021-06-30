@@ -17,8 +17,29 @@ if (!defined('ABSPATH')) {
 
 function mi_form_plugin(): string
 {
-// what plugin do
-    return 'shortCode of the mi form creator';
+    global $wpdb;
+    $options = $wpdb->get_row(/** @lang sql */ "SELECT * FROM `mi_creator_fields` WHERE id = 1;");
+    print_r($options);
+    $div = '<form method="POST" action="">';
+    if ($options->username) {
+        $div .= '<label>First Name:</label>';
+        $div .= '<input type="text" name="firstname" placeholder="First name"><br>';
+    }
+    if ($options->email) {
+        $div .= '<label>Email:</label>';
+        $div .= '<input type="text" name="email" placeholder="Email"><br>';
+    }
+    if ($options->subject) {
+        $div .= '<label>Subject:</label>';
+        $div .= '<input type="text" name="message_subject" placeholder="Subject"><br>';
+    }
+    if ($options->message) {
+        $div .= '<label>Message:</label>';
+        $div .= '<input type="text" name="message_content" placeholder="Message"><br>';
+    }
+    $div .= '<input type="submit" name="submit"><br>';
+    $div .= '</form>';
+    return $div;
 }
 
 function menu()
@@ -67,7 +88,7 @@ function display_menu()
                             <input type="checkbox" name="message" id="message">
                         </div>
                         <div class="input-group">
-                            <input type="submit" class="button button-primary" name="submit">
+                            <input type="submit" class="button button-primary" name="submit-setting">
                         </div>
                     </form>
                 </div>
@@ -173,26 +194,26 @@ function create_table_for_data_of_fields()
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
     $sql = /** @lang sql */
-        "CREATE TABLE ".$wpdb->base_prefix."mi_creator_fields_data (
+        "CREATE TABLE " . $wpdb->base_prefix . "mi_creator_fields_data (
         id int AUTO_INCREMENT,
         username varchar(255) ,
         email varchar(255) ,
         subject varchar(255),
-        content varchar(255),
+        message varchar(255),
         at DATETIME DEFAULT CURRENT_TIMESTAMP,
         PRIMARY key(id)
         ) $charset_collate;";
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    maybe_create_table($wpdb->base_prefix . "mi_creator_fields", $sql);
+    maybe_create_table($wpdb->base_prefix . "mi_creator_fields_data", $sql);
 }
 
-    function create_table_for_fields()
-    {
+function create_table_for_fields()
+{
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
     $sql = /** @lang sql */
-        "CREATE TABLE ".$wpdb->base_prefix."mi_creator_fields (
+        "CREATE TABLE " . $wpdb->base_prefix . "mi_creator_fields (
         id INT,
         username BOOLEAN,
         email BOOLEAN,
@@ -215,12 +236,47 @@ function create_table_for_data_of_fields()
     );
 }
 
-function setup_plugin_option(){
-    create_table_for_fields();
+function setup_plugin_option()
+{
     create_table_for_data_of_fields();
+    create_table_for_fields();
 }
-function deactivation_plugin_option(){
 
+function deactivation_plugin_option()
+{
+    global $wpdb;
+    $wpdb->query(/** @lang sql */ "DROP TABLE IF EXISTS wp_mi_creator_fields");
+
+}
+
+function update_status_of_fields()
+{
+    global $wpdb;
+    $username = (bool)$_POST['username'];
+    $email = (bool)$_POST['email'];
+    $subject = (bool)$_POST['subject'];
+    $message = (bool)$_POST['message'];
+
+    unset($_POST['submit']);
+    $wpdb->update(
+        'wp_mi_creator_fields',
+        $_POST,
+        ['id' => 1]
+    );
+}
+
+function insert_data_fields()
+{
+    global $wpdb;
+    unset($_POST['submit']);
+    $wpdb->insert('wp_mi_creator_fields_data', $_POST);
+}
+
+if (isset($_POST['submit'])) {
+    insert_data_fields();
+}
+if (isset($_POST['submit-setting'])) {
+    update_status_of_fields();
 }
 // add actions :
 add_action('admin_menu', 'menu');
