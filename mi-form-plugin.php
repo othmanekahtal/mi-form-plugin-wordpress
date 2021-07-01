@@ -56,7 +56,7 @@ function display_menu()
             <p>can create and manage your custom form , also MI creator support data insertion in your database.
                 <mark>MI creator Form is FOSS🤍</mark>
             </p>
-            <p><b>NOTE:</b> shortcode for implement the plugin functionality <strong>[mi-form]</strong> </p>
+            <p><b>NOTE:</b> shortcode for implement the plugin functionality <strong>[mi-form]</strong></p>
         </div>
         <div class="main">
             <div class="main-opt">
@@ -73,23 +73,34 @@ function display_menu()
                     <form method="POST" action="">
                         <div class="input-group">
                             <label for="name">Username :</label>
-                            <input type="checkbox" name="username" id="name">
-                        </div>
-                        <div class="input-group">
-                            <label for="email">Email :</label>
-                            <input type="checkbox" name="email" id="email">
-                        </div>
-                        <div class="input-group">
+                            <?php
+                            global $wpdb;
+                            $result = $wpdb->get_row(/** @lang sql */ "select * FROM wp_mi_creator_fields where id = 1 ",
+                                object);
+                            echo '<input type="checkbox" name="username" id="name" ';
+                            echo $result->username ? 'checked' : '';
+                            echo '>
+                            </div>
+                    <div class="input-group">
+                        <label for="email">Email :</label>
+                        <input type="checkbox" name="email" id="email"';
+                            echo $result->email ? 'checked' : '';
+                            echo '/>
+                    </div>
+                    <div class="input-group">
                             <label for="subject">Subject :</label>
-                            <input type="checkbox" name="subject" id="subject">
-                        </div>
+                            <input type="checkbox" name="subject" id="subject" ';
+                            echo $result->subject ? 'checked' : '';
+                            echo '>
+                           </div>
                         <div class="input-group">
                             <label for="message">Message :</label>
-                            <input type="checkbox" name="message" id="message">
-                        </div>
-                        <div class="input-group">
-                            <input type="submit" class="button button-primary" name="submit-setting">
-                        </div>
+                            <input type="checkbox" name="message" id="message" ';echo $result->message ? 'checked' : '';
+                            echo '></div>';
+                    ?>
+                            <div class="input-group">
+                                <input type="submit" class="button button-primary" name="submit-setting">
+                            </div>
                     </form>
                 </div>
                 <div class="data-forms hidden-content">
@@ -321,10 +332,10 @@ function update_status_of_fields()
     $email = false;
     $subject = false;
     $message = false;
-    if ($_POST['username'] == 'on') $username = true;
-    if ($_POST['message'] == 'on') $message = true;
-    if ($_POST['subject'] == 'on') $subject = true;
-    if ($_POST['email'] == 'on') $email = true;
+    if (isset($_POST['username']) && $_POST['username'] == 'on') $username = true;
+    if (isset($_POST['message']) && $_POST['message'] == 'on') $message = true;
+    if (isset($_POST['subject']) && $_POST['subject'] == 'on') $subject = true;
+    if (isset($_POST['email']) && $_POST['email'] == 'on') $email = true;
     global $wpdb;
     unset($_POST['submit-setting']);
     $wpdb->update(
